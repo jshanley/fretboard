@@ -1,0 +1,3 @@
+# fretboard
+
+create fretboard diagrams
