@@ -1,0 +1,58 @@
+body {
+  padding-top: 60px;
+}
+input[type="text"],
+input[type="color"],
+input[type="number"],
+input[type="checkbox"] {
+  margin-bottom: 0;
+}
+table input[type="checkbox"] {
+  margin-right: 1em;
+}
+table .input-append,
+table .input-prepend {
+  margin-bottom: 0;
+}
+
+.tuning-presets {
+  min-width: 20em;
+}
+
+.tuning-presets a {
+  text-decoration: none;
+  color: #555;
+}
+
+.add-pattern {
+  font-weight: bold;
+  font-size: 1.25em;
+}
+
+
+.svg-wrapper {
+  width: 100%;
+  text-align: center;
+}
+.fret,
+.string {
+  stroke-linecap: square;
+  shape-rendering: crispEdges;
+}
+.fret {
+  stroke: #555;
+  stroke-width: 3px;
+}
+.fret[data-fret-number="0"] {
+  stroke-width: 12px;
+  stroke: #999;
+}
+.string {
+  stroke: #777;
+  stroke-width: 1px;
+}
+.fret-label {
+  fill: #333;
+  font-family: Times, Georgia, serif;
+  font-size: 18px;
+}

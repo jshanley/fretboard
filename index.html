@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html ng-app="fretboard">
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="./bower/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="./fretboard.css">
+</head>
+<body ng-controller="FretboardCtrl">
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="navbar-header">
+			<a href="#" class="navbar-brand">Fretboard</a>
+		</div>
+		<div class="collapse navbar-collapse navbar-ex1-collapse">
+				<ul class="nav navbar-nav">
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown">Examples <span class="caret"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li ng-repeat="example in examples">
+								<a href="" ng-click="example.load()"><strong>{{example.title}}</strong><div class="muted">{{example.description}}</div></a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<form class="navbar-form form-inline">
+					<label class="add-on">Tuning</label>
+					<input type="text" ng-change="updateTuning()" ng-model="inputTuning" />
+					<div class="btn-group">
+						<div class="btn dropdown-toggle" data-toggle="dropdown">Presets <span class="caret"></span></div>
+						<ul class="dropdown-menu tuning-presets" role="menu">
+							<li class="dropdown-group" ng-repeat="instrument in tunings">
+								<a href="">{{instrument.instrument}}</a>
+								<ul>
+									<li ng-repeat="tuning in instrument.tunings">
+										<a href="" ng-click="$parent.$parent.inputTuning = tuning.notes; $parent.$parent.updateTuning()">{{tuning.name}} <span class="muted">[{{tuning.notes}}]</span></a>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+					<label class="add-on">Frets</label>
+					<input class="input-mini" type="number" min="0" max="23" ng-model="lowest_fret" ng-change="updateFrets()" />
+					<span class="add-on">to</span>
+					<input class="input-mini" type="number" min="1" max="24" ng-model="highest_fret" ng-change="updateFrets()" />
+					<span class="add-on"></span>
+				</form>
+		</div>
+	</nav>
+	<div class="svg-wrapper">
+		<svg ng-attr-width="{{settings.padding.left + ((frets.length - 1) * settings.spacing.fret) + settings.padding.right}}"
+			ng-attr-height="{{settings.padding.top + ((tuning.length - 1) * settings.spacing.string) + settings.padding.bottom}}">
+			<line ng-repeat="fret in frets"
+					class="fret"
+					ng-show="fret >= 0"
+					ng-attr-x1="{{settings.padding.left + ($index * settings.spacing.fret)}}"
+					ng-attr-x2="{{settings.padding.left + ($index * settings.spacing.fret)}}"
+					ng-attr-y1="{{settings.padding.top}}"
+					ng-attr-y2="{{settings.padding.top + ((tuning.length - 1) * settings.spacing.string)}}"
+					data-fret-number="{{fret}}"></line>
+			<line ng-repeat="string in tuning track by $index"
+					class="string"
+					ng-attr-x1="{{lowest_fret > 0 && settings.padding.left || settings.padding.left + settings.spacing.fret}}"
+					ng-attr-x2="{{settings.padding.left + ((frets.length - 1) * settings.spacing.fret)}}"
+					ng-attr-y1="{{settings.padding.top + ($index * settings.spacing.string)}}"
+					ng-attr-y2="{{settings.padding.top + ($index * settings.spacing.string)}}"
+					data-string-number="{{tuning.length - $index}}"
+					data-string-tuning="{{string}}"></line>
+			<text class="fret-label"
+					ng-show="lowest_fret > 1"
+					text-anchor="middle"
+					ng-attr-x="{{settings.padding.left + (0.5 * settings.spacing.fret)}}"
+					ng-attr-y="{{settings.padding.top / 2}}"
+					dy="0.34em">{{roman_numerals[lowest_fret]}}</text>
+			<g ng-repeat="pattern in patterns">
+				<g ng-repeat="note in pattern.notes">
+					<circle class="note"
+							ng-attr-cx="{{getNoteX(note.fret)}}"
+							ng-attr-cy="{{getNoteY(note.string)}}"
+							ng-attr-r="{{settings.radius}}"
+							ng-attr-fill="{{pattern.color}}"
+							ng-attr-style="stroke-width: 1px"
+							ng-attr-opacity="{{pattern.opacity}}"
+							data-note-name="{{note.note}}"
+							data-fret="{{note.fret}}"
+							data-string="{{note.string}}"></circle>
+					<text class="note-label"
+							ng-show="settings.labels.note.show"
+							ng-attr-x="{{getNoteX(note.fret)}}"
+							ng-attr-y="{{getNoteY(note.string)}}"
+							ng-attr-style="font-family: {{settings.labels.note.font}}; font-size: {{settings.radius}}px;"
+							ng-attr-fill="{{settings.labels.note.color}}"
+							ng-attr-opacity="{{pattern.opacity}}"
+							text-anchor="middle"
+							ng-attr-dy="{{settings.radius * 0.4}}px"
+							data-fret="{{note.fret}}"
+							data-string="{{note.string}}">{{note.note}}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="span7">
+				<table class="table table-striped table-bordered">
+					<thead>
+						<tr><th>Layer</th><th>Pattern</th><th>Color</th><th>Opacity</th><th></th></tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="pattern in patterns">
+							<td>{{$index + 1}}</td>
+							<td><input type="text" ng-change="placeNotes($index)" ng-model="pattern.input" /></td>
+							<td><input type="color" class="input-mini" placeholder="color" ng-model="pattern.color" ng-change="colorChanged($index)" /></td>
+							<td><input type="number" class="input-mini" ng-model="pattern.opacity" min="0" max="1" step="0.05" /></td>
+							<td><span class="close" ng-click="removeInput($index)">&times;</span></td>
+						</tr>
+						<tr>
+							<td colspan="5"><button class="btn add-pattern" ng-click="addInput()">&plus;</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="span5">
+				<div class="well">
+					<table class="table table-striped">
+						<thead>
+							<th colspan="2">Settings</th>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="control-td">Note Labels</td>
+								<td>
+									<input type="checkbox" ng-model="settings.labels.note.show" />
+								</td>
+							</tr>
+							<tr>
+								<td class="control-td">Fret Spacing</td>
+								<td>
+									<div class="input-append">
+										<input type="number" class="input-mini" min="5" max="400" ng-model="settings.spacing.fret" />
+										<span class="add-on">px</span>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td class="control-td">String Spacing</td>
+								<td>
+									<div class="input-append">
+										<input type="number" class="input-mini" min="5" max="400" ng-model="settings.spacing.string" />
+										<span class="add-on">px</span>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td class="control-td">Note Radius</td>
+								<td>
+									<div class="input-append">
+										<input type="number" class="input-mini" min="1" max="200" ng-model="settings.radius" />
+										<span class="add-on">px</span>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2"><button class="btn" ng-click="setDefaults()">defaults</button></td>
+							</tr>
+						</tbody>
+					</table>
+				</div> <!--/well-->
+			</div>
+		</div> <!--/row-->
+	</div> <!--/container-->
+
+	<!-- SCRIPTS -->
+	<script src="bower/jquery/dist/jquery.min.js"></script>
+	<script src="bower/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="bower/angular/angular.js"></script>
+	<script src="./motive.js"></script>
+	<script src="./fingering.js"></script>
+	<script src="./fretboard.js"></script>
+</body>

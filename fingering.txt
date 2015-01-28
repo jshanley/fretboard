@@ -1,0 +1,12 @@
+HF: relatively higher finger number
+LF: relatively lower finger number
+
+HF may not be on a lower fret than LF
+
+HF and LF may be on the same fret if HF is on lower string number (higher pitched string)
+
+finger 1 may play multiple notes on the same fret
+
+adjacent fingers may not be spaced more than 2 frets apart
+
+total fret span may not be greater than 5 frets
